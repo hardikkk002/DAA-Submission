@@ -1,0 +1,108 @@
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+struct Movie {
+    string name;
+    double rating;
+    int year;
+    int watchTime;
+};
+
+// Get value according to user's choice
+double getValue(Movie m, int choice) {
+    if (choice == 1)
+        return m.rating;
+    else if (choice == 2)
+        return m.year;
+    else
+        return m.watchTime;
+}
+
+// Partition function
+int partition(vector<Movie>& movies, int low, int high, int choice) {
+
+    double pivot = getValue(movies[high], choice);
+
+    int i = low - 1;
+
+    for (int j = low; j < high; j++) {
+
+        if (getValue(movies[j], choice) <= pivot) {
+            i++;
+
+            swap(movies[i], movies[j]);
+        }
+    }
+
+    swap(movies[i + 1], movies[high]);
+
+    return i + 1;
+}
+
+// Quick Sort
+void quickSort(vector<Movie>& movies, int low, int high, int choice) {
+
+    if (low < high) {
+
+        int p = partition(movies, low, high, choice);
+
+        quickSort(movies, low, p - 1, choice);
+        quickSort(movies, p + 1, high, choice);
+    }
+}
+
+int main() {
+
+    int n;
+
+    cout << "Enter number of movies: ";
+    cin >> n;
+
+    vector<Movie> movies(n);
+
+    cout << "\nEnter movie details:\n";
+
+    for (int i = 0; i < n; i++) {
+
+        cout << "\nMovie " << i + 1 << endl;
+
+        cout << "Name: ";
+        cin >> movies[i].name;
+
+        cout << "IMDb Rating: ";
+        cin >> movies[i].rating;
+
+        cout << "Release Year: ";
+        cin >> movies[i].year;
+
+        cout << "Watch Time (minutes): ";
+        cin >> movies[i].watchTime;
+    }
+
+    int choice;
+
+    cout << "\nSort movies based on:\n";
+    cout << "1. IMDb Rating\n";
+    cout << "2. Release Year\n";
+    cout << "3. Watch Time\n";
+
+    cout << "Enter your choice: ";
+    cin >> choice;
+
+    quickSort(movies, 0, n - 1, choice);
+
+    cout << "\n----- Sorted Movies -----\n";
+
+    for (int i = 0; i < n; i++) {
+
+        cout << movies[i].name << " | "
+             << "Rating: " << movies[i].rating << " | "
+             << "Year: " << movies[i].year << " | "
+             << "Watch Time: " << movies[i].watchTime
+             << " min" << endl;
+    }
+
+    return 0;
+}
