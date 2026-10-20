@@ -1,132 +1,99 @@
+#include <iostream>
+#include <vector>
+#include <fstream>
+#include <algorithm> // For std::count
 
-#include <bits/stdc++.h>
 using namespace std;
 
-struct Transaction {
-    int customer_id;
-    string orderId;
-    string ProductInfo;
-    double amount;
-    string purDate;
-    string location;
-};
-
-class Solution {
-public:
-
-    void merge(vector<Transaction>& arr, int low, int mid, int high) {
-
-        vector<Transaction> temp;
-        int left = low, right = mid + 1;
-
-        while (left <= mid && right <= high) {
-            if (arr[left].customer_id <= arr[right].customer_id)
-                temp.push_back(arr[left++]);
-            else
-                temp.push_back(arr[right++]);
-        }
-
-        while (left <= mid)
-            temp.push_back(arr[left++]);
-
-        while (right <= high)
-            temp.push_back(arr[right++]);
-
-        for (int i = low; i <= high; i++)
-            arr[i] = temp[i - low];
-    }
-
-    void mergeSort(vector<Transaction>& arr, int low, int high) {
-        if (low >= high)
-            return;
-
-        int mid = (low + high) / 2;
-
-        mergeSort(arr, low, mid);
-        mergeSort(arr, mid + 1, high);
-        merge(arr, low, mid, high);
+// 1. Using a 'class' instead of a 'struct'
+class TransactionRow {
+public: // We must specify public so the merge sort can access these variables
+    string text;
+    long long dateValue; 
+    
+    // Constructor to easily create a new row object
+    TransactionRow(string t, long long d) {
+        text = t;
+        dateValue = d;
     }
 };
+
+// 2. Your EXACT merge sort logic, adapted for the class
+void merge(vector<TransactionRow>& arr, int si, int mid, int ei) {
+    vector<TransactionRow> temp;
+    int i = si, j = mid + 1;
+    
+    while (i <= mid && j <= ei) {
+        // Compare the numeric date values directly
+        if (arr[i].dateValue < arr[j].dateValue) temp.push_back(arr[i++]);
+        else temp.push_back(arr[j++]);
+    }
+    
+    while (i <= mid) temp.push_back(arr[i++]);
+    while (j <= ei) temp.push_back(arr[j++]);
+    
+    for (int idx = si, x = 0; idx <= ei; idx++) {
+        arr[idx] = temp[x++];
+    }
+}
+
+void mergeSort(vector<TransactionRow>& arr, int si, int ei) {
+    if (si >= ei) return;
+    int mid = si + (ei - si) / 2;
+    mergeSort(arr, si, mid);
+    mergeSort(arr, mid + 1, ei);
+    merge(arr, si, mid, ei);
+}
 
 int main() {
-    vector<Transaction> arr;
-
-    ifstream file("D:\\COLLEGE\\DAA Assignments\\customer_data.csv");
-
-    if (!file) {
-        cout << "Error Opening File";
+    ifstream file("Retail_Transaction_Dataset.csv");
+    vector<TransactionRow> dataset;
+    string line, header;
+    
+    // Check if the file opened successfully
+    if (!file.is_open()) {
+        cout << "Error: Could not open file." << endl;
         return 1;
     }
-
-    string line;
-    getline(file, line);
-
+    
+    getline(file, header); // Skip the header row    
+    // 3. Loop to read and parse the CSV
     while (getline(file, line)) {
-        stringstream ss(line);
-        string item;
-        Transaction t;
-
-        if (getline(ss, item, ','))
-            t.customer_id = stoi(item);
-
-        if (getline(ss, t.orderId, ',')) {}
-
-        if (getline(ss, t.ProductInfo, ',')) {}
-
-        if (getline(ss, item, ','))
-            t.amount = stod(item);
-
-        if (getline(ss, t.purDate, ',')) {}
-
-        if (getline(ss, t.location, ',')) {}
-
-        arr.push_back(t);
+        
+        // Handle rows that break onto a new line because of quotes
+        while (count(line.begin(), line.end(), '"') % 2 != 0) {
+            string extra;
+            getline(file, extra);
+            line += "\n" + extra;
+        }
+        
+        // Skip exactly 4 commas to find the start of the TransactionDate
+        int pos = 0;
+        for (int i = 0; i < 4; i++) {
+            pos = line.find(',', pos) + 1;
+        }
+        
+        // Quickly extract Month, Day, Year, Hour, and Minute
+        int m, d, y, h, min;
+        sscanf(line.c_str() + pos, "%d/%d/%d %d:%d", &m, &d, &y, &h, &min);
+        
+        // The Math Trick: Turn the date into a single large number
+        long long dateVal = y * 100000000LL + m * 1000000LL + d * 10000LL + h * 100LL + min;
+        
+        // Use the class constructor to add the data to our vector
+        dataset.push_back(TransactionRow(line, dateVal));
     }
 
-    file.close();
-
-    if (arr.empty()) {
-        cout << "No data was Parsed... Check your csv File" << endl;
-        return 1;
+    // 4. Sort the dataset
+    if (dataset.size() > 0) {
+        mergeSort(dataset, 0, dataset.size() - 1);
     }
 
-    cout << "Loaded.." << arr.size() << " Transactions. Sorting..." << endl;
-
-    Solution sol;
-    sol.mergeSort(arr, 0, arr.size() - 1);
-
-    cout << "Sorting Complete.." << endl;
-
-    int dispLimit = min(10, (int)arr.size());
-
-    for (int i = 0; i < dispLimit; i++) {
-        cout << "Customer Id : " << arr[i].customer_id
-             << "| Order Id : " << arr[i].orderId
-             << "| Product Info : " << arr[i].ProductInfo
-             << "| Amount : " << arr[i].amount << endl;
+    // Print the first two sorted rows to verify
+    cout << "Sorting complete! Here are the earliest 2 transactions:\n\n";
+    if (dataset.size() >= 2) {
+        cout << dataset[0].text << "\n\n" << dataset[1].text << endl;
     }
-
-    ofstream outFile("sorted_customer_data.csv");
-
-    if (!outFile) {
-        cout << "Error opening output file!" << endl;
-        return 1;
-    }
-
-    outFile << "customer_id,orderId,ProductInfo,amount,purDate,location\n";
-
-    for (const auto& t : arr) {
-        outFile << t.customer_id << ","
-                << t.orderId << ","
-                << t.ProductInfo << ","
-                << t.amount << ","
-                << t.purDate << ","
-                << t.location << "\n";
-    }
-
-    outFile.close();
-
-    cout << "Sorted data successfully written to sorted_customer_data.csv" << endl;
 
     return 0;
 }
