@@ -1,0 +1,15 @@
+Loaded 10000 movies.
+Sort by: 1-Rating  2-Year  3-Vote Count
+Enter choice: 1
+
+Top 10 Movies:
+The Shawshank Redemption (1994) | Rating: 8.7 | Vote Count: 22099
+Dilwale Dulhania Le Jayenge (1995) | Rating: 8.7 | Vote Count: 3785
+The Godfather (1972) | Rating: 8.7 | Vote Count: 16446
+Schindler's List (1993) | Rating: 8.6 | Vote Count: 13087
+The Godfather Part II (1974) | Rating: 8.6 | Vote Count: 9920
+Spirited Away (2001) | Rating: 8.5 | Vote Count: 13265
+Impossible Things (2021) | Rating: 8.5 | Vote Count: 266
+Your Name. (2016) | Rating: 8.5 | Vote Count: 9009
+12 Angry Men (1957) | Rating: 8.5 | Vote Count: 6620
+Gabriel's Inferno (2020) | Rating: 8.5 | Vote Count: 2276

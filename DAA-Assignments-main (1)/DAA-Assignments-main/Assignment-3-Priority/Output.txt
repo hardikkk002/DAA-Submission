@@ -1,0 +1,51 @@
+Enter number of relief items: 4
+
+Item #1:
+Name: Food Packets
+Weight (kg): 10
+Utility Value: 80
+Is it divisible? (1 = Yes, 0 = No): 1
+Priority (1 = High, 2 = Medium, 3 = Low): 1
+
+Item #2:
+Name: Medicines
+Weight (kg): 5
+Utility Value: 100
+Is it divisible? (1 = Yes, 0 = No): 0
+Priority (1 = High, 2 = Medium, 3 = Low): 1
+
+Item #3:
+Name: Blankets
+Weight (kg): 8
+Utility Value: 60
+Is it divisible? (1 = Yes, 0 = No): 1
+Priority (1 = High, 2 = Medium, 3 = Low): 2
+
+Item #4:
+Name: Clothes
+Weight (kg): 6
+Utility Value: 30
+Is it divisible? (1 = Yes, 0 = No): 1
+Priority (1 = High, 2 = Medium, 3 = Low): 3
+
+Enter maximum weight capacity of the boat (in kg): 20
+
+Sorted Items (by Priority, then Value/Weight):
+Item                Weight    Value     Priority    Value/Weight   Type     
+Medicines           5         100       1           20.00          Indivisible
+Food Packets        10.00     80.00     1           8.00           Divisible
+Blankets            8.00      60.00     2           7.50           Divisible
+Clothes             6.00      30.00     3           5.00           Divisible
+
+Items selected for transport:
+ - Medicines: 5.00 kg, Utility = 100.00, Priority = 1, Type = Indivisible
+ - Food Packets: 10.00 kg, Utility = 80.00, Priority = 1, Type = Divisible
+ - Blankets: 5.00 kg, Utility = 37.50, Priority = 2, Type = Divisible
+
+===== Final Report =====
+Total weight carried: 20.00 kg
+Total utility value carried: 217.50 units
+
+--------------------------------
+Process exited after 126.9 seconds with return value 0
+Press any key to continue . . .

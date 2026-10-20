@@ -1,0 +1,13 @@
+Loaded..1000 Transactions. Sorting...
+Sorting Complete..
+Customer Id : 1011| Order Id : 945619| Product Info : Product B| Amount : 918.72
+Customer Id : 1011| Order Id : 781571| Product Info : Product B| Amount : 210.3
+Customer Id : 1025| Order Id : 296412| Product Info : Product D| Amount : 359.29
+Customer Id : 1029| Order Id : 992083| Product Info : Product D| Amount : 704.99
+Customer Id : 1046| Order Id : 236306| Product Info : Product B| Amount : 859.82
+Customer Id : 1049| Order Id : 147489| Product Info : Product A| Amount : 225.72
+Customer Id : 1082| Order Id : 419491| Product Info : Product A| Amount : 600.69
+Customer Id : 1086| Order Id : 594580| Product Info : Product B| Amount : 100.18
+Customer Id : 1104| Order Id : 171269| Product Info : Product B| Amount : 146.12
+Customer Id : 1108| Order Id : 273650| Product Info : Product D| Amount : 883.21
+Sorted data successfully written to sorted_customer_data.csv

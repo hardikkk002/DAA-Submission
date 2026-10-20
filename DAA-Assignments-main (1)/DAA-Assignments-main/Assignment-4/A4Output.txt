@@ -1,0 +1,11 @@
+Enter number of intersections (vertices): 4
+Enter number of roads (edges): 4
+Enter edges (u v w):
+0 1 1
+1 2 5
+0 2 3
+2 3 5
+Enter ambulance start location (source): 0
+Enter number of hospitals: 2
+Enter hospital nodes: 2 3
+Nearest hospital is at node 2 with travel time 3 minutes.

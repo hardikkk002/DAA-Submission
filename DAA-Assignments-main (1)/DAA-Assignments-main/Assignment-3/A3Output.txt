@@ -1,0 +1,38 @@
+Enter number of items: 5
+
+Enter profit and weight:
+Item 1 Profit: 100
+Item 1 Weight: 10
+Item 2 Profit: 20
+Item 2 Weight: 2
+Item 3 Profit: 30
+Item 3 Weight: 4
+Item 4 Profit: 50
+Item 4 Weight: 10
+Item 5 Profit: 60
+Item 5 Weight: 5
+
+Enter knapsack capacity: 100
+
+Before Sorting:
+Item 1 Profit = 100 Weight = 10 Ratio = 10
+Item 2 Profit = 20 Weight = 2 Ratio = 10
+Item 3 Profit = 30 Weight = 4 Ratio = 7.5
+Item 4 Profit = 50 Weight = 10 Ratio = 5
+Item 5 Profit = 60 Weight = 5 Ratio = 12
+
+After Sorting (by Ratio):
+Item 1 Profit = 60 Weight = 5 Ratio = 12
+Item 2 Profit = 20 Weight = 2 Ratio = 10
+Item 3 Profit = 100 Weight = 10 Ratio = 10
+Item 4 Profit = 30 Weight = 4 Ratio = 7.5
+Item 5 Profit = 50 Weight = 10 Ratio = 5
+
+Selection Process:
+Take full item 1 Profit = 60 Weight = 5
+Take full item 2 Profit = 20 Weight = 2
+Take full item 3 Profit = 100 Weight = 10
+Take full item 4 Profit = 30 Weight = 4
+Take full item 5 Profit = 50 Weight = 10
+
+Maximum Profit = 260
