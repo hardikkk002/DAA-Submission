@@ -1,539 +1,176 @@
-#include <iostream>
-#include <vector>
-#include <map>
-#include <set>
-#include <algorithm>
-#include <string>
 
+#include <bits/stdc++.h>
 using namespace std;
 
-class ExamScheduler {
-private:
-    map<string, string> courses;
-    map<string, vector<string>> enrollments;
-    map<string, int> rooms;
-    map<string, set<string>> graph;
-    map<string, int> courseStudents;
-
-public:
-
-    ExamScheduler(
-        map<string, string> c,
-        map<string, vector<string>> e,
-        map<string, int> r
-    ) {
-        courses = c;
-        enrollments = e;
-        rooms = r;
-
-        for (auto &course : courses)
-            graph[course.first] = {};
-
-        buildGraph();
-    }
-
-    void buildGraph() {
-
-        for (auto &student : enrollments) {
-
-            vector<string> studentCourses = student.second;
-
-            for (string course : studentCourses)
-                courseStudents[course]++;
-
-            for (int i = 0; i < studentCourses.size(); i++) {
-
-                for (int j = i + 1;
-                     j < studentCourses.size(); j++) {
-
-                    string c1 = studentCourses[i];
-                    string c2 = studentCourses[j];
-
-                    if (c1 != c2) {
-                        graph[c1].insert(c2);
-                        graph[c2].insert(c1);
-                    }
-                }
-            }
-        }
-    }
-
-    map<string, int> greedyColoring() {
-
-        map<string, int> color;
-
-        for (auto &course : courses) {
-
-            string current = course.first;
-            set<int> usedColors;
-
-            for (string neighbor : graph[current]) {
-
-                if (color.find(neighbor) != color.end())
-                    usedColors.insert(color[neighbor]);
-            }
-
-            int c = 0;
-
-            while (usedColors.count(c))
-                c++;
-
-            color[current] = c;
-        }
-
-        return color;
-    }
-
-    map<string, int> welshPowell() {
-
-        vector<string> order;
-
-        for (auto &course : courses)
-            order.push_back(course.first);
-
-        sort(order.begin(), order.end(),
-            [&](string a, string b) {
-
-                return graph[a].size() > graph[b].size();
-            });
-
-        map<string, int> color;
-
-        for (string current : order) {
-
-            set<int> usedColors;
-
-            for (string neighbor : graph[current]) {
-
-                if (color.find(neighbor) != color.end())
-                    usedColors.insert(color[neighbor]);
-            }
-
-            int c = 0;
-
-            while (usedColors.count(c))
-                c++;
-
-            color[current] = c;
-        }
-
-        return color;
-    }
-
-    map<string, int> dsatur() {
-
-        map<string, int> color;
-        set<string> uncolored;
-
-        for (auto &course : courses)
-            uncolored.insert(course.first);
-
-        while (!uncolored.empty()) {
-
-            string selected = "";
-            int bestSaturation = -1;
-            int bestDegree = -1;
-
-            for (string course : uncolored) {
-
-                set<int> neighborColors;
-
-                for (string neighbor : graph[course]) {
-
-                    if (color.find(neighbor) != color.end())
-                        neighborColors.insert(color[neighbor]);
-                }
-
-                int saturation = neighborColors.size();
-                int degree = graph[course].size();
-
-                if (saturation > bestSaturation ||
-                    (saturation == bestSaturation &&
-                     degree > bestDegree)) {
-
-                    selected = course;
-                    bestSaturation = saturation;
-                    bestDegree = degree;
-                }
-            }
-
-            set<int> usedColors;
-
-            for (string neighbor : graph[selected]) {
-
-                if (color.find(neighbor) != color.end())
-                    usedColors.insert(color[neighbor]);
-            }
-
-            int c = 0;
-
-            while (usedColors.count(c))
-                c++;
-
-            color[selected] = c;
-            uncolored.erase(selected);
-        }
-
-        return color;
-    }
-
-    int numberOfColors(map<string, int> color) {
-
-        set<int> colors;
-
-        for (auto &x : color)
-            colors.insert(x.second);
-
-        return colors.size();
-    }
-
-    bool validateColoring(map<string, int> color) {
-
-        for (auto &course : graph) {
-
-            string current = course.first;
-
-            for (string neighbor : course.second) {
-
-                if (color[current] == color[neighbor])
-                    return false;
-            }
-        }
-
-        return true;
-    }
-
-    bool allocateRooms(
-        map<string, int> color,
-        map<int, map<string, vector<string>>> &schedule
-    ) {
-
-        for (int slot = 0;
-             slot < numberOfColors(color);
-             slot++) {
-
-            vector<string> slotCourses;
-
-            for (auto &course : color) {
-
-                if (course.second == slot)
-                    slotCourses.push_back(course.first);
-            }
-
-            sort(slotCourses.begin(), slotCourses.end(),
-                [&](string a, string b) {
-
-                    return courseStudents[a] >
-                           courseStudents[b];
-                });
-
-            set<string> availableRooms;
-
-            for (auto &room : rooms)
-                availableRooms.insert(room.first);
-
-            for (string course : slotCourses) {
-
-                int requiredStudents =
-                    courseStudents[course];
-
-                int totalCapacity = 0;
-
-                vector<string> selectedRooms;
-
-                vector<string> roomList(
-                    availableRooms.begin(),
-                    availableRooms.end()
-                );
-
-                sort(roomList.begin(), roomList.end(),
-                    [&](string a, string b) {
-
-                        return rooms[a] > rooms[b];
-                    });
-
-                for (string room : roomList) {
-
-                    selectedRooms.push_back(room);
-                    totalCapacity += rooms[room];
-
-                    availableRooms.erase(room);
-
-                    if (totalCapacity >= requiredStudents)
-                        break;
-                }
-
-                if (totalCapacity < requiredStudents)
-                    return false;
-
-                schedule[slot][course] =
-                    selectedRooms;
-            }
-        }
-
-        return true;
-    }
-
-    void printGraph() {
-
-        cout << "\nCONFLICT GRAPH\n";
-        cout << "--------------\n";
-
-        for (auto &course : graph) {
-
-            cout << course.first << " -> ";
-
-            for (string neighbor : course.second)
-                cout << neighbor << " ";
-
-            cout << endl;
-        }
-    }
-
-    void printSchedule(
-        map<string, int> color,
-        map<int, map<string, vector<string>>> schedule
-    ) {
-
-        cout << "\nFINAL EXAM TIMETABLE\n";
-
-        for (int slot = 0;
-             slot < numberOfColors(color);
-             slot++) {
-
-            cout << "\nTime Slot "
-                 << slot + 1 << "\n";
-
-
-            for (auto &course : schedule[slot]) {
-
-                string courseID = course.first;
-
-                cout << courseID
-                     << " - "
-                     << courses[courseID]
-                     << " | Students: "
-                     << courseStudents[courseID]
-                     << " | Room(s): ";
-
-                for (string room : course.second) {
-
-                    cout << room
-                         << "("
-                         << rooms[room]
-                         << ") ";
-                }
-
-                cout << endl;
-            }
-        }
-    }
-};
-
 int main() {
+    ifstream in("input.txt");
+    ofstream out("output.txt");
 
-    int nCourses;
-
-    cout << "UNIVERSITY EXAM TIMETABLE SYSTEM\n";
-
-    cout << "\nEnter number of courses: ";
-    cin >> nCourses;
-
-    map<string, string> courses;
-
-    cout << "\nEnter course details\n";
-
-    for (int i = 1; i <= nCourses; i++) {
-
-        string id;
-        string name;
-
-        cout << "Enter course ID: ";
-        cin >> id;
-
-        cout << "Enter course name: ";
-        cin >> ws;
-        getline(cin, name);
-
-        courses[id] = name;
+    if (!in) {
+        cout << "Error: Cannot open input.txt\n";
+        return 1;
     }
 
-    int nStudents;
+    if (!out) {
+        cout << "Error: Cannot create output.txt\n";
+        return 1;
+    }
 
-    cout << "\nEnter number of students: ";
-    cin >> nStudents;
+    int courses, students;
+    in >> courses >> students;
 
-    map<string, vector<string>> enrollments;
+    if (!in || courses <= 0 || students < 0) {
+        cout << "Error: Invalid input data\n";
+        return 1;
+    }
 
-    cout << "\nEnter student enrollments\n";
+    // Step 1: Create conflict graph using adjacency sets.
+    vector<set<int>> graph(courses + 1);
 
-    for (int i = 1; i <= nStudents; i++) {
+    for (int s = 0; s < students; s++) {
+        int count;
+        in >> count;
 
-        string studentID;
-        int numberOfCourses;
+        if (!in || count < 0) {
+            cout << "Error: Invalid enrolment data\n";
+            return 1;
+        }
 
-        cout << "\nEnter student ID: ";
-        cin >> studentID;
+        vector<int> enrolled(count);
 
-        cout << "Enter number of courses for "
-             << studentID << ": ";
+        for (int i = 0; i < count; i++) {
+            in >> enrolled[i];
 
-        cin >> numberOfCourses;
-
-        cout << "Enter course IDs: ";
-
-        for (int j = 0; j < numberOfCourses; j++) {
-
-            string courseID;
-            cin >> courseID;
-
-            if (courses.find(courseID) != courses.end()) {
-                enrollments[studentID].push_back(courseID);
+            if (!in || enrolled[i] < 1 ||
+                enrolled[i] > courses) {
+                cout << "Error: Invalid course number\n";
+                return 1;
             }
-            else {
-                cout << "Invalid course ID: "
-                     << courseID << endl;
+        }
+
+        // Courses taken by the same student conflict.
+        for (int i = 0; i < count; i++) {
+            for (int j = i + 1; j < count; j++) {
+                int a = enrolled[i];
+                int b = enrolled[j];
+
+                if (a != b) {
+                    graph[a].insert(b);
+                    graph[b].insert(a);
+                }
             }
         }
     }
 
-    int nRooms;
+    // Step 2: Sort courses by descending degree.
+    vector<int> order(courses);
+    iota(order.begin(), order.end(), 1);
 
-    cout << "\nEnter number of rooms: ";
-    cin >> nRooms;
+    sort(order.begin(), order.end(),
+         [&](int a, int b) {
+             if (graph[a].size() != graph[b].size())
+                 return graph[a].size() > graph[b].size();
 
-    map<string, int> rooms;
+             return a < b;
+         });
 
-    cout << "\nEnter room details\n";
+    // Step 3: Assign colours using Welsh-Powell.
+    vector<int> colour(courses + 1, 0);
+    int maxColour = 0;
 
-    for (int i = 1; i <= nRooms; i++) {
+    for (int course : order) {
+        set<int> usedColours;
 
-        string roomID;
-        int capacity;
+        for (int neighbour : graph[course]) {
+            if (colour[neighbour] != 0)
+                usedColours.insert(colour[neighbour]);
+        }
 
-        cout << "Enter room ID: ";
-        cin >> roomID;
+        int c = 1;
 
-        cout << "Enter capacity: ";
-        cin >> capacity;
+        while (usedColours.count(c))
+            c++;
 
-        rooms[roomID] = capacity;
+        colour[course] = c;
+        maxColour = max(maxColour, c);
     }
 
-    ExamScheduler scheduler(
-        courses,
-        enrollments,
-        rooms
-    );
+    // Step 4: Assign names to exam-slot colours.
+    vector<string> colourNames = {
+        "",
+        "BLUE", "GREEN", "RED", "ORANGE",
+        "PURPLE", "CYAN", "MAGENTA", "YELLOW",
+        "PINK", "BROWN", "GOLD", "TEAL"
+    };
 
-    scheduler.printGraph();
+    auto getColourName = [&](int c) -> string {
+        if (c < (int)colourNames.size())
+            return colourNames[c];
 
-    map<string, int> greedy =
-        scheduler.greedyColoring();
+        return "COLOUR_" + to_string(c);
+    };
 
-    map<string, int> welshPowell =
-        scheduler.welshPowell();
+    // Step 5: Display and save the timetable.
+    cout << "\n===== EXAM TIMETABLE =====\n";
+    cout << "Number of courses: " << courses << "\n";
+    cout << "Number of exam slots used: "
+         << maxColour << "\n\n";
 
-    map<string, int> dsatur =
-        scheduler.dsatur();
+    out << "===== EXAM TIMETABLE =====\n";
+    out << "Number of courses: " << courses << "\n";
+    out << "Number of exam slots used: "
+        << maxColour << "\n\n";
 
-    cout << "\nCOLORING ALGORITHM COMPARISON\n";
+    for (int c = 1; c <= maxColour; c++) {
+        cout << "Slot " << c << " ["
+             << getColourName(c) << "]: ";
 
-    cout << "Greedy       : "
-         << scheduler.numberOfColors(greedy)
-         << " time slots\n";
+        out << "Slot " << c << " ["
+            << getColourName(c) << "]: ";
 
-    cout << "Welsh-Powell : "
-         << scheduler.numberOfColors(welshPowell)
-         << " time slots\n";
+        bool first = true;
 
-    cout << "DSATUR       : "
-         << scheduler.numberOfColors(dsatur)
-         << " time slots\n";
+        for (int course = 1; course <= courses; course++) {
+            if (colour[course] == c) {
+                if (!first) {
+                    cout << ", ";
+                    out << ", ";
+                }
 
-    cout << "\nVALIDATION\n";
+                cout << "Course " << course;
+                out << "Course " << course;
 
-    cout << "Greedy       : "
-         << (scheduler.validateColoring(greedy)
-             ? "Valid" : "Invalid")
-         << endl;
+                first = false;
+            }
+        }
 
-    cout << "Welsh-Powell : "
-         << (scheduler.validateColoring(welshPowell)
-             ? "Valid" : "Invalid")
-         << endl;
-
-    cout << "DSATUR       : "
-         << (scheduler.validateColoring(dsatur)
-             ? "Valid" : "Invalid")
-         << endl;
-
-    int greedyColors =
-        scheduler.numberOfColors(greedy);
-
-    int wpColors =
-        scheduler.numberOfColors(welshPowell);
-
-    int dsaturColors =
-        scheduler.numberOfColors(dsatur);
-
-    int minimumColors =
-        min({
-            greedyColors,
-            wpColors,
-            dsaturColors
-        });
-
-    string bestAlgorithm;
-    map<string, int> bestColoring;
-
-    if (greedyColors == minimumColors) {
-
-        bestAlgorithm = "Greedy";
-        bestColoring = greedy;
-
-    }
-    else if (wpColors == minimumColors) {
-
-        bestAlgorithm = "Welsh-Powell";
-        bestColoring = welshPowell;
-
-    }
-    else {
-
-        bestAlgorithm = "DSATUR";
-        bestColoring = dsatur;
+        cout << "\n";
+        out << "\n";
     }
 
-    cout << "\nBEST ALGORITHM\n";
+    // Step 6: Verify that conflicting courses
+    // do not have the same colour.
+    bool valid = true;
 
-    cout << bestAlgorithm
-         << " selected with "
-         << minimumColors
-         << " time slots.\n";
-
-    map<int, map<string, vector<string>>> schedule;
-
-    bool roomSuccess =
-        scheduler.allocateRooms(
-            bestColoring,
-            schedule
-        );
-
-    if (roomSuccess) {
-
-        scheduler.printSchedule(
-            bestColoring,
-            schedule
-        );
-
+    for (int u = 1; u <= courses; u++) {
+        for (int v : graph[u]) {
+            if (colour[u] == colour[v])
+                valid = false;
+        }
     }
-    else {
 
-        cout << "\nROOM ALLOCATION ERROR\n";
-        cout << "Not enough room capacity "
-             << "to schedule all exams.\n";
+    if (valid) {
+        cout << "\nConflict check: PASS\n";
+        out << "\nConflict check: PASS\n";
+    } else {
+        cout << "\nConflict check: FAIL\n";
+        out << "\nConflict check: FAIL\n";
     }
+
+    cout << "\nResults saved to output.txt\n";
+
+    in.close();
+    out.close();
 
     return 0;
 }
