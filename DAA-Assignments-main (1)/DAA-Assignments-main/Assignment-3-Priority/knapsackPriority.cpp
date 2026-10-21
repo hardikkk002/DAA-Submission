@@ -1,15 +1,11 @@
-
 #include <iostream>
 #include <vector>
 #include <algorithm>
 #include <iomanip>
-#include <string>
-#include <limits>
 
 using namespace std;
 
-struct Item
-{
+struct Item {
     string name;
     double weight;
     double value;
@@ -17,34 +13,24 @@ struct Item
     int priority;
 
     Item(string n, double w, double v, bool d, int p)
-        : name(n), weight(w), value(v), divisible(d), priority(p)
-    {
-    }
+        : name(n), weight(w), value(v), divisible(d), priority(p) {}
 
-    double valuePerWeight() const
-    {
+    double valuePerWeight() const {
         return value / weight;
     }
 };
 
-// Sort by priority, then value/weight
-bool compare(const Item& a, const Item& b)
-{
+// Sort by priority first, then value per weight
+bool compare(const Item& a, const Item& b) {
     if (a.priority == b.priority)
         return a.valuePerWeight() > b.valuePerWeight();
-
     return a.priority < b.priority;
 }
 
-double fractionalKnapsack(
-    vector<Item>& items,
-    double capacity,
-    double& totalWeightCarried)
-{
+double fractionalKnapsack(vector<Item>& items, double capacity, double& totalWeightCarried) {
     sort(items.begin(), items.end(), compare);
 
     cout << "\nSorted Items (by Priority, then Value/Weight):\n";
-
     cout << left << setw(20) << "Item"
          << setw(10) << "Weight"
          << setw(10) << "Value"
@@ -52,16 +38,13 @@ double fractionalKnapsack(
          << setw(15) << "Value/Weight"
          << setw(15) << "Type" << "\n";
 
-    for (const auto& item : items)
-    {
+    for (const auto& item : items) {
         cout << left << setw(20) << item.name
              << setw(10) << item.weight
              << setw(10) << item.value
              << setw(12) << item.priority
-             << setw(15) << fixed << setprecision(2)
-             << item.valuePerWeight()
-             << setw(15)
-             << (item.divisible ? "Divisible" : "Indivisible")
+             << setw(15) << fixed << setprecision(2) << item.valuePerWeight()
+             << setw(15) << (item.divisible ? "Divisible" : "Indivisible")
              << "\n";
     }
 
@@ -70,39 +53,26 @@ double fractionalKnapsack(
 
     cout << "\nItems selected for transport:\n";
 
-    for (const auto& item : items)
-    {
-        if (capacity <= 0)
-            break;
+    for (const auto& item : items) {
+        if (capacity <= 0) break;
 
-        if (item.divisible)
-        {
+        if (item.divisible) {
             double takenWeight = min(item.weight, capacity);
             double takenValue = item.valuePerWeight() * takenWeight;
-
             totalValue += takenValue;
             capacity -= takenWeight;
             totalWeightCarried += takenWeight;
 
-            cout << " - " << item.name
-                 << ": " << takenWeight << " kg"
-                 << ", Utility = " << takenValue
-                 << ", Priority = " << item.priority
-                 << ", Type = Divisible\n";
-        }
-        else
-        {
-            if (item.weight <= capacity)
-            {
+            cout << " - " << item.name << ": " << takenWeight << " kg, Utility = " << takenValue
+                 << ", Priority = " << item.priority << ", Type = Divisible\n";
+        } else {
+            if (item.weight <= capacity) {
                 totalValue += item.value;
                 capacity -= item.weight;
                 totalWeightCarried += item.weight;
 
-                cout << " - " << item.name
-                     << ": " << item.weight << " kg"
-                     << ", Utility = " << item.value
-                     << ", Priority = " << item.priority
-                     << ", Type = Indivisible\n";
+                cout << " - " << item.name << ": " << item.weight << " kg, Utility = " << item.value
+                     << ", Priority = " << item.priority << ", Type = Indivisible\n";
             }
         }
     }
@@ -110,90 +80,25 @@ double fractionalKnapsack(
     return totalValue;
 }
 
-int main()
-{
-    int n;
-
-    cout << "Enter number of relief items: ";
-    cin >> n;
-
-    if (n <= 0)
-    {
-        cout << "Number of items must be positive.\n";
-        return 0;
-    }
-
-    vector<Item> items;
-
-    for (int i = 0; i < n; ++i)
-    {
-        string name;
-        double weight, value;
-        int divisibleInt, priority;
-
-        cout << "\nItem #" << (i + 1) << ":\n";
-
-        cout << "Name: ";
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        getline(cin, name);
-
-        cout << "Weight (kg): ";
-        cin >> weight;
-
-        cout << "Utility Value: ";
-        cin >> value;
-
-        cout << "Is it divisible? (1 = Yes, 0 = No): ";
-        cin >> divisibleInt;
-
-        cout << "Priority (1 = High, 2 = Medium, 3 = Low): ";
-        cin >> priority;
-
-        if (weight <= 0 || value < 0 ||
-            (divisibleInt != 0 && divisibleInt != 1) ||
-            priority < 1 || priority > 3)
-        {
-            cout << "Invalid input. Please enter valid values.\n";
-            return 0;
-        }
-
-        items.emplace_back(
-            name,
-            weight,
-            value,
-            divisibleInt == 1,
-            priority
-        );
-    }
+int main() {
+    vector<Item> items = {
+        Item("Medical Kits",     10, 100, false, 1),
+        Item("Food Packets",     20, 60,  true,  3),
+        Item("Drinking Water",   30, 90,  true,  2),
+        Item("Blankets",         15, 45, false, 3),
+        Item("Infant Formula",    5, 50, false, 1)
+    };
 
     double capacity;
-
-    cout << "\nEnter maximum weight capacity of the boat (in kg): ";
+    cout << "Enter maximum weight capacity of the boat (in kg): ";
     cin >> capacity;
 
-    if (capacity < 0)
-    {
-        cout << "Capacity cannot be negative.\n";
-        return 0;
-    }
-
     double totalWeightCarried;
-
-    double maxValue = fractionalKnapsack(
-        items,
-        capacity,
-        totalWeightCarried
-    );
+    double maxValue = fractionalKnapsack(items, capacity, totalWeightCarried);
 
     cout << "\n===== Final Report =====\n";
-
-    cout << "Total weight carried: "
-         << fixed << setprecision(2)
-         << totalWeightCarried << " kg\n";
-
-    cout << "Total utility value carried: "
-         << maxValue << " units\n";
+    cout << "Total weight carried: " << fixed << setprecision(2) << totalWeightCarried << " kg\n";
+    cout << "Total utility value carried: " << fixed << setprecision(2) << maxValue << " units\n";
 
     return 0;
 }
-
